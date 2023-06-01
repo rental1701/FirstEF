@@ -258,6 +258,8 @@
                                     <Label Content="Перерыв(мин): "/>
                                     <TextBox Text="{Binding BreakDuration}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="2" Width="30" MaxWidth="50"/>
                                 </StackPanel>
+                                <CheckBox Content="Обновлять" IsChecked="{Binding IsUpdateSelectedPerson}" VerticalAlignment="Center" Margin="5,0"
+                                          ToolTip="Автоматически обновлять данные при выборе нового сотрудника"/>
                             </StackPanel>
                         </StackPanel>
                         <Grid Grid.Row="1">

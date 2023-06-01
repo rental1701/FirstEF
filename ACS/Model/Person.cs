@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
 using System;
+using ACS.Infrastructure;
 
 namespace ACS.Model
 {
@@ -49,7 +50,7 @@ namespace ACS.Model
         }
         public Person(Person p)
         {
-            this.BytePicture = p.BytePicture;
+            this.BytePicture = p.BytePicture?.Length != 0 ? p.BytePicture : NoFoto.NoFotoByte;
             this.Company = p.Company;
             this.FirstName = p.FirstName;
             this.TabNumber = p.TabNumber;

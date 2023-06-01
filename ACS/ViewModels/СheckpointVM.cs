@@ -32,9 +32,9 @@ namespace ACS.ViewModels
         }
 
 
-        private string _SelectedPdfFile;
+        private string? _SelectedPdfFile;
 
-        public string SelectedPdfFile
+        public string? SelectedPdfFile
         {
             get { return _SelectedPdfFile; }
             set => Set(ref _SelectedPdfFile, value);
@@ -64,23 +64,10 @@ namespace ACS.ViewModels
                 {
                     if (SelectedGroup == "По подразделениям")
                     {
-                        _ = Task.Run(() =>
-                        {
-                            using (DataUserContext db = new())
-                            {
-                                Divisions = db.Divisions.Include(d => d.Persons).ToList();
-                                Division? temp = Divisions.FirstOrDefault();
-                                if (temp != null)
-                                {
-                                    SelectedDivision = temp;
-                                    IsVisiableTools = true;
-                                }
-                            }
-                        });
+                        IsVisiableTools = true;
                     }
                     else
-                        SelectedDivision = null;
-                    IsVisiableTools = false;
+                        IsVisiableTools = false;
                 }
             }
         }
@@ -231,19 +218,23 @@ namespace ACS.ViewModels
             {
                 if (Set(ref _SelectedPersonIO, value) && _SelectedPersonIO != null)
                 {
-                    Person e = new();
-                    using (DataUserContext user = new DataUserContext())
-                    {
-                        var person = user.Persons
-                            .Include(p => p.Company)
-                            .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
-                            .Include(d => d.Division)
-                            .ToList();
-                        e = (Person)person[0].Clone();
 
+                    if (SelectedPerson is null || IsUpdateSelectedPerson)
+                    {
+                        Person e = new();
+                        using (DataUserContext user = new DataUserContext())
+                        {
+                            var person = user.Persons
+                                .Include(p => p.Company)
+                                .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
+                                .Include(d => d.Division)
+                                .ToList();
+                            e = (Person)person[0].Clone();
+
+                        }
+                        SelectedPerson = e;
+                        OnFormSelectedPersonCommandExecute(false); 
                     }
-                    SelectedPerson = e;
-                    OnFormSelectedPersonCommandExecute(false);
                 }
             }
         }
@@ -265,6 +256,17 @@ namespace ACS.ViewModels
             set => Set(ref _FinishDatePerson, value);
         }
         #endregion
+
+        private bool _IsUpdateSelectedPerson;
+        /// <summary>
+        /// Автоматическое обновление данных выбранного сотрудника
+        /// </summary>
+        public bool IsUpdateSelectedPerson
+        {
+            get => _IsUpdateSelectedPerson;
+            set => Set(ref _IsUpdateSelectedPerson, value);
+        }
+
 
         #region Данные событий
         private List<LogData>? _ListDataPerson;
@@ -306,7 +308,7 @@ namespace ACS.ViewModels
 
         public double TotalWorkTimeHour
         {
-            get => Math.Round(_TotalWorkTimeHour, 1);
+            get => Math.Round(_TotalWorkTimeHour, 2);
             set => Set(ref _TotalWorkTimeHour, value);
         }
         /// <summary>Рабочее время без учета обеда</summary>
@@ -548,7 +550,7 @@ namespace ACS.ViewModels
                                Select o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
 
-           
+
 
             var list = LogData.GetLogDataFromDataTable(queryOne, queryTwo);
             foreach (var item in list)
@@ -562,7 +564,7 @@ namespace ACS.ViewModels
                     item.IsEarlyExit = true;
                 }
             }
-            ListDataPerson = list;      
+            ListDataPerson = list;
             double k = 0;
             foreach (var item in ListDataPerson)
             {
@@ -600,6 +602,20 @@ namespace ACS.ViewModels
             };
             _SelectedGroup = GroupList[0];
             Dir.Checkpoint = this;
+
+            #region Инициализация подразделений
+           
+                using (DataUserContext db = new())
+                {
+                    Divisions = db.Divisions.Include(d => d.Persons).ToList();
+                    Division? temp = Divisions.FirstOrDefault();
+                    if (temp != null)
+                    {
+                        SelectedDivision = temp;
+                    }
+                }
+            
+            #endregion
         }
     }
 }
