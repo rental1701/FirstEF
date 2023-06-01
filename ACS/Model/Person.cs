@@ -35,8 +35,26 @@ namespace ACS.Model
         public Division? Division { get; }
         [Column("Company")]
         public int? CompanyId { get; set; }
+
+
+        private byte[]? _BytePicture;
         [Column("Picture", TypeName = "image")]
-        public byte[]? BytePicture { get; set; }
+        public byte[]? BytePicture
+        {
+            get { return _BytePicture; }
+            set
+            {
+                if (value != null && value.Length > 10)
+                {
+                    _BytePicture = value;
+                }
+                else
+                {
+                    _BytePicture = NoFoto.NoFotoByte;
+                }
+            }
+        }
+
         public Company? Company { get; set; }
         [NotMapped]
         public string FullName
@@ -66,7 +84,7 @@ namespace ACS.Model
         }
         public object Clone()
         {
-           return new Person(this);
+            return new Person(this);
         }
     }
 }

@@ -9,10 +9,12 @@ using Microsoft.Windows.Themes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Input;
 using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
@@ -222,18 +224,19 @@ namespace ACS.ViewModels
                     if (SelectedPerson is null || IsUpdateSelectedPerson)
                     {
                         Person e = new();
-                        using (DataUserContext user = new DataUserContext())
-                        {
-                            var person = user.Persons
-                                .Include(p => p.Company)
-                                .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
-                                .Include(d => d.Division)
-                                .ToList();
-                            e = (Person)person[0].Clone();
+                        
+                            // = user.Persons
+                            //    .Include(p => p.Company)
+                            //    .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
+                            //    .Include(d => d.Division)
+                            //    .ToList();
 
-                        }
+                            var person = Divisions?.SelectMany(d => d?.Persons)
+                            .Where(p => p.ID == SelectedPersonIO?.HozOrgan).FirstOrDefault();
+                            e = (Person)person.Clone();
+                        
                         SelectedPerson = e;
-                        OnFormSelectedPersonCommandExecute(false); 
+                        OnFormSelectedPersonCommandExecute(false);
                     }
                 }
             }
@@ -316,6 +319,47 @@ namespace ACS.ViewModels
         {
             get => ExitTimePerson.TimeOfDay.TotalMinutes - StartTimePerson.TimeOfDay.TotalMinutes - BreakDuration;
         }
+        #endregion
+
+        #region Фильтрация сотрудников по фамилии
+        private string? _SecondNameFilter;
+
+        public string? SecondNameFilter
+        {
+            get => _SecondNameFilter;
+            set
+            {
+                if (!Set(ref _SecondNameFilter, value))
+                    return;
+                _CollectionPerson.View.Refresh();
+            }
+        }
+
+        private void OnPersonFilter(object sender, FilterEventArgs e)
+        {
+            if (e.Item is not Person p)
+            {
+                e.Accepted = false;
+                return;
+            }
+            var filter = _SecondNameFilter;
+            if (string.IsNullOrEmpty(filter))
+                return;
+
+            if (p.Name is null)
+            {
+                e.Accepted = false;
+                return;
+            }
+
+            if (p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            e.Accepted = false;
+        }
+        private readonly CollectionViewSource _CollectionPerson = new CollectionViewSource();
+        public ICollectionView CollectionPerson => _CollectionPerson.View;
+
         #endregion
         #endregion
 
@@ -604,18 +648,28 @@ namespace ACS.ViewModels
             Dir.Checkpoint = this;
 
             #region Инициализация подразделений
-           
-                using (DataUserContext db = new())
+            using (DataUserContext db = new())
+            {
+                //Divisions = db.Divisions
+                //    .Include(d => d.Persons)
+                //    .ToList();
+
+                List<Person> persons = db.Persons
+                     .Include(p => p.Company)
+                     .Include(p => p.Post)
+                     .Include(d => d.Division)
+                     .ToList();
+
+                Divisions = db.Divisions.ToList();
+                Division? temp = Divisions.FirstOrDefault();
+                if (temp != null)
                 {
-                    Divisions = db.Divisions.Include(d => d.Persons).ToList();
-                    Division? temp = Divisions.FirstOrDefault();
-                    if (temp != null)
-                    {
-                        SelectedDivision = temp;
-                    }
+                    SelectedDivision = temp;
                 }
-            
+                _CollectionPerson.Source = from p in persons select p;
+            }
             #endregion
+            _CollectionPerson.Filter += OnPersonFilter;
         }
     }
 }

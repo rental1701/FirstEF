@@ -54,6 +54,33 @@
                             <Button Content="Применить" Command="{Binding ListListOfUndisciplinedCommand}" Width="150" Margin="10"/>
                         </StackPanel>
                     </GroupBox>
+                    <Expander Header="Поиск по фамилии">
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Top">
+                                <fa:ImageAwesome Height="12" Icon="Solid_Search" Margin="3,0"/>
+                                <TextBox Text="{Binding SecondNameFilter, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,10,0"/>
+                            </DockPanel>
+                            <ListBox ItemsSource="{Binding CollectionPerson}" SelectedItem="{Binding SelectedPerson}" Margin="5,5,10,0" IsSynchronizedWithCurrentItem="False" 
+                             VirtualizingPanel.IsContainerVirtualizable="True" VirtualizingPanel.IsVirtualizing="True" Height="300">
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="Person">
+                                        <TextBlock Text="{Binding FullName}"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </DockPanel>
+                    </Expander>
+
                     <TextBlock Text="Группировать по:" HorizontalAlignment="Left" Margin="10,10,5,5" />
                     <ComboBox ItemsSource="{Binding GroupList}" HorizontalAlignment="Left"
                       SelectedItem="{Binding SelectedGroup}" 
@@ -321,8 +348,8 @@
                             </DataGrid>
                             <StackPanel Orientation="Horizontal" Grid.Row="1">
                                 <StackPanel Orientation="Horizontal" Margin="10,5">
-                                    <TextBlock Text="Отработанное время за выбранный период(ч): "/>
-                                    <TextBlock Text="{Binding TotalWorkTimeHour, StringFormat=[{0} ч]}"/>
+                                    <TextBlock Text="Отработанное время приблизительно: "/>
+                                    <TextBlock Text="{Binding TotalWorkTimeHour, StringFormat='~{0} ч'}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="10,5">
                                     <TextBlock Text="Дней: "/>
