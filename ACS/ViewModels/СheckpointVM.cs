@@ -492,7 +492,7 @@ namespace ACS.ViewModels
                         {
                             data = SclDataConnection.GetData(queryTwo);
                             LogDataIO.InitialLastOutput(list, data);
-                            foreach (var item in list)
+                            foreach (var item in list) //формирование главного списка
                             {
                                 if (item.FirstInput is DateTime d1 && d1.TimeOfDay > StartTime.TimeOfDay)
                                 {
@@ -557,7 +557,7 @@ namespace ACS.ViewModels
                 {
                     item.IsLateEntry = true;
                 }
-                if (item.ExitTime is DateTime d2 && d2.TimeOfDay > ExitTimePerson.TimeOfDay)
+                if (item.ExitTime is DateTime d2 && d2.TimeOfDay < ExitTimePerson.TimeOfDay)
                 {
                     item.IsEarlyExit = true;
                 }
