@@ -12,6 +12,7 @@
                     <con:VisabilityConverterUI x:Key="VisConvUI"/>
                     <con:UriConverter x:Key="UriConv"/>
                 </ResourceDictionary>
+                <ResourceDictionary x:Name="btnUpdate" Source="Resources\Style\ButtonStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

@@ -50,7 +50,10 @@ namespace ACS.ViewModels
         public List<string> GroupList
         {
             get => _GroupList;
-            set => Set(ref _GroupList, value);
+            set
+            {
+                Set(ref _GroupList, value);
+            }
         }
 
 
@@ -67,9 +70,16 @@ namespace ACS.ViewModels
                     if (SelectedGroup == "По подразделениям")
                     {
                         IsVisiableTools = true;
+                        SelectedDivision = Divisions?.First();
+                        //_CollectionPerson.Filter -= OnPersonFilter;
+
                     }
                     else
+                    {
                         IsVisiableTools = false;
+                        SelectedDivision = null;
+                    }
+                    // _CollectionPerson.Filter += OnPersonFilter;
                 }
             }
         }
@@ -101,7 +111,25 @@ namespace ACS.ViewModels
         public Division? SelectedDivision
         {
             get => _SelectedDivision;
-            set => Set(ref _SelectedDivision, value);
+            set
+            {
+                if (Set(ref _SelectedDivision, value))
+                {
+                    if (SelectedGroup == "По подразделениям")
+                    {
+                        //_CollectionPerson.Source = null;
+                        //_CollectionPerson.Source = from d in Divisions
+                        //                           from p in d.Persons
+                        //                           where p.DivisionId == SelectedDivision?.ID select p;
+
+                        //  _CollectionPerson.Filter -= OnPersonFilter;
+                        //_CollectionPerson.Filter += OnPersonFilterSelectedDivivision;
+
+                        _CollectionPerson.View?.Refresh();
+                    }
+                    _CollectionPerson.View?.Refresh();
+                }
+            }
         }
 
         #endregion
@@ -208,7 +236,10 @@ namespace ACS.ViewModels
         public Person? SelectedPerson
         {
             get => _SelectedPerson;
-            set => Set(ref _SelectedPerson, value);
+            set { Set(ref _SelectedPerson, value);
+                if (SelectedPerson != null)
+                    IsAllPerson = false;
+            }
         }
 
         private LogDataIO? _SelectedPersonIO;
@@ -224,17 +255,17 @@ namespace ACS.ViewModels
                     if (SelectedPerson is null || IsUpdateSelectedPerson)
                     {
                         Person e = new();
-                        
-                            // = user.Persons
-                            //    .Include(p => p.Company)
-                            //    .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
-                            //    .Include(d => d.Division)
-                            //    .ToList();
 
-                            var person = Divisions?.SelectMany(d => d?.Persons)
-                            .Where(p => p.ID == SelectedPersonIO?.HozOrgan).FirstOrDefault();
-                            e = (Person)person.Clone();
-                        
+                        // = user.Persons
+                        //    .Include(p => p.Company)
+                        //    .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
+                        //    .Include(d => d.Division)
+                        //    .ToList();
+
+                        var person = Divisions?.SelectMany(d => d?.Persons)
+                        .Where(p => p.ID == SelectedPersonIO?.HozOrgan).FirstOrDefault();
+                        e = (Person)person.Clone();
+
                         SelectedPerson = e;
                         OnFormSelectedPersonCommandExecute(false);
                     }
@@ -331,10 +362,35 @@ namespace ACS.ViewModels
             {
                 if (!Set(ref _SecondNameFilter, value))
                     return;
-                _CollectionPerson.View.Refresh();
+                //_CollectionPerson.Filter -= OnPersonFilterSelectedDivivision;
+                //_CollectionPerson.Filter += OnPersonFilter;
+
+                _CollectionPerson.View?.Refresh();
+
+
             }
         }
-
+        private void OnPersonFilterSelectedDivivision(object sender, FilterEventArgs e)
+        {
+            if (e.Item is not Person p)
+            {
+                e.Accepted = false;
+                return;
+            }
+            if (SelectedDivision is null)
+            {
+                e.Accepted = false;
+                return;
+            }
+            if (p.Name is null)
+            {
+                e.Accepted = false;
+                return;
+            }
+            if (p.DivisionId == SelectedDivision?.ID)
+                return;
+            e.Accepted = false;
+        }
         private void OnPersonFilter(object sender, FilterEventArgs e)
         {
             if (e.Item is not Person p)
@@ -342,9 +398,22 @@ namespace ACS.ViewModels
                 e.Accepted = false;
                 return;
             }
+
             var filter = _SecondNameFilter;
-            if (string.IsNullOrEmpty(filter))
+            if (string.IsNullOrEmpty(filter) && SelectedDivision != null && p.DivisionId == SelectedDivision.ID)
+            {
                 return;
+            }
+            if (string.IsNullOrEmpty(filter))
+            {
+                if (SelectedDivision != null && p.DivisionId != SelectedDivision.ID)
+                {
+                    e.Accepted = false;
+                    return;
+                }
+                return;
+            }
+
 
             if (p.Name is null)
             {
@@ -352,10 +421,20 @@ namespace ACS.ViewModels
                 return;
             }
 
-            if (p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+
+            if (SelectedDivision != null && p.DivisionId == SelectedDivision?.ID
+                && p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+
+            if (SelectedDivision == null && p.Name.Contains(filter, StringComparison.OrdinalIgnoreCase))
                 return;
 
             e.Accepted = false;
+
+
         }
         private readonly CollectionViewSource _CollectionPerson = new CollectionViewSource();
         public ICollectionView CollectionPerson => _CollectionPerson.View;
@@ -465,7 +544,8 @@ namespace ACS.ViewModels
                                From pLogData p 
                                Join pList l On(p.HozOrgan = l.ID)
                                Join PDivision d On(l.Section = d.ID)
-                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 1 AND l.ID = {SelectedPersonFromDivison?.ID}) 
+                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 1 
+                               AND l.ID = {SelectedPersonFromDivison?.ID}) 
 
                                SElect  i.HozOrgan Id,  l.Name SurName, d.Name Division,  i.TimeVal input From input i 
                                Join pList l on(l.ID = i.HozOrgan) 
@@ -477,7 +557,8 @@ namespace ACS.ViewModels
                                From pLogData p 
                                Join pList l On(p.HozOrgan = l.ID)
                                Join PDivision d On(l.Section = d.ID)
-                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 2 AND l.ID = {SelectedPersonFromDivison?.ID}) 
+                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 2 
+                               AND l.ID = {SelectedPersonFromDivison?.ID}) 
 
                                Select o.HozOrgan Id, o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
@@ -661,14 +742,15 @@ namespace ACS.ViewModels
                      .ToList();
 
                 Divisions = db.Divisions.ToList();
-                Division? temp = Divisions.FirstOrDefault();
-                if (temp != null)
-                {
-                    SelectedDivision = temp;
-                }
+                //Division? temp = Divisions.FirstOrDefault();
+                //if (temp != null)
+                //{
+                //    SelectedDivision = temp;
+                //}
                 _CollectionPerson.Source = from p in persons select p;
             }
             #endregion
+            //  _CollectionPerson.Filter += OnPersonFilterSelectedDivivision;
             _CollectionPerson.Filter += OnPersonFilter;
         }
     }

@@ -41,18 +41,9 @@ namespace ACS.Model
         [Column("Picture", TypeName = "image")]
         public byte[]? BytePicture
         {
-            get { return _BytePicture; }
-            set
-            {
-                if (value != null && value.Length > 10)
-                {
-                    _BytePicture = value;
-                }
-                else
-                {
-                    _BytePicture = NoFoto.NoFotoByte;
-                }
-            }
+            get => _BytePicture?.Length > 10 ? _BytePicture : NoFoto.NoFotoByte;
+            set => _BytePicture = value;
+
         }
 
         public Company? Company { get; set; }
