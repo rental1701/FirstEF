@@ -1,27 +1,28 @@
 ﻿using ACS.Commands.BaseCommand;
 using ACS.Infrastructure;
+using ACS.Interfaces;
 using ACS.Model;
 using ACS.Model.DataContext;
 using ACS.ViewModels.Base;
 using ACS.ViewModels.WorkSchedules;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Windows.Themes;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
-using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace ACS.ViewModels
 {
     public class СheckpointVM : ViewModel
     {
+
+        #region Диалоговое окно
+        private IDialogWindow Window;
+        #endregion
         #region файловая система
         public WorkSchedulesVM Dir { get; } = new WorkSchedulesVM("C:\\Users\\kiselev\\EF\\FirstEF\\ACS\\WorkPdf");
 
@@ -69,6 +70,7 @@ namespace ACS.ViewModels
                 {
                     if (SelectedGroup == "По подразделениям")
                     {
+                        
                         IsVisiableTools = true;
                         SelectedDivision = Divisions?.First();
                         //_CollectionPerson.Filter -= OnPersonFilter;
@@ -155,7 +157,14 @@ namespace ACS.ViewModels
         public bool IsAllPerson
         {
             get => _IsAllPerson;
-            set => Set(ref _IsAllPerson, value);
+            set
+            {
+                Set(ref _IsAllPerson, value);
+                if (IsAllPerson)
+                {
+                    SelectedPerson = null;
+                }
+            }
         }
         #endregion
 
@@ -236,7 +245,9 @@ namespace ACS.ViewModels
         public Person? SelectedPerson
         {
             get => _SelectedPerson;
-            set { Set(ref _SelectedPerson, value);
+            set
+            {
+                Set(ref _SelectedPerson, value);
                 if (SelectedPerson != null)
                     IsAllPerson = false;
             }
@@ -502,8 +513,36 @@ namespace ACS.ViewModels
 
                                Select o.HozOrgan Id, o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
-                    if (SelectedGroup == GroupList[0])
+                    if (SelectedGroup == GroupList[0] && IsAllPerson)
                     {
+                        ListLogData = GetListLDIO(queryOne, queryTwo);
+                    }
+                    else if (SelectedGroup == GroupList[0] && SelectedPerson != null)
+                    {
+                        queryOne = @$"With input as(
+                               Select p.HozOrgan, p.mode, p.TimeVal, 
+                               Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
+                               From pLogData p 
+                               Join pList l On(p.HozOrgan = l.ID)
+                               Join PDivision d On(l.Section = d.ID)
+                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 1 
+                               AND l.ID = {SelectedPerson?.ID}) 
+
+                               SElect  i.HozOrgan Id,  l.Name SurName, d.Name Division,  i.TimeVal input From input i 
+                               Join pList l on(l.ID = i.HozOrgan) 
+                               Join PDivision d on(d.ID = l.Section) 
+                               Where i.first = 1 Order by i.TimeVal";
+                        queryTwo = @$"With output as(
+                               Select p.HozOrgan, p.TimeVal,
+                               Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal desc) last 
+                               From pLogData p 
+                               Join pList l On(p.HozOrgan = l.ID)
+                               Join PDivision d On(l.Section = d.ID)
+                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 2 
+                               AND l.ID = {SelectedPerson?.ID}) 
+
+                               Select o.HozOrgan Id, o.TimeVal output from output o 
+                               Where o.last = 1 Order by o.TimeVal";
                         ListLogData = GetListLDIO(queryOne, queryTwo);
                     }
                     else if (SelectedGroup == GroupList[1])
@@ -536,7 +575,7 @@ namespace ACS.ViewModels
                                Where o.last = 1 Order by o.TimeVal";
                             ListLogData = GetListLDIO(queryOne, queryTwo);
                         }
-                        else if (SelectedDivision != null)
+                        else if (SelectedDivision != null && SelectedPerson != null)
                         {
                             queryOne = @$"With input as(
                                Select p.HozOrgan, p.mode, p.TimeVal, 
@@ -545,7 +584,7 @@ namespace ACS.ViewModels
                                Join pList l On(p.HozOrgan = l.ID)
                                Join PDivision d On(l.Section = d.ID)
                                Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 1 
-                               AND l.ID = {SelectedPersonFromDivison?.ID}) 
+                               AND l.ID = {SelectedPerson?.ID}) 
 
                                SElect  i.HozOrgan Id,  l.Name SurName, d.Name Division,  i.TimeVal input From input i 
                                Join pList l on(l.ID = i.HozOrgan) 
@@ -558,7 +597,7 @@ namespace ACS.ViewModels
                                Join pList l On(p.HozOrgan = l.ID)
                                Join PDivision d On(l.Section = d.ID)
                                Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 2 
-                               AND l.ID = {SelectedPersonFromDivison?.ID}) 
+                               AND l.ID = {SelectedPerson?.ID}) 
 
                                Select o.HozOrgan Id, o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
@@ -568,7 +607,9 @@ namespace ACS.ViewModels
                     else if (SelectedGroup == GroupList[2])
                     {
 
-                        queryOne = @$"With input as(
+                        if (IsAllPerson)
+                        {
+                            queryOne = @$"With input as(
                                Select p.HozOrgan, p.mode, p.TimeVal, 
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
                                From pLogData p 
@@ -578,28 +619,29 @@ namespace ACS.ViewModels
                                Join pList l on(l.ID = i.HozOrgan) 
                                Join PDivision d on(d.ID = l.Section) 
                                Where i.first = 1 Order by i.TimeVal";
+                            ListLogData = GetListLDIO(queryOne); 
+                        }
+                        else if(SelectedPerson != null)
+                        {
+                            queryOne = @$"With input as(
+                               Select p.HozOrgan, p.mode, p.TimeVal, 
+                               Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
+                               From pLogData p 
+                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 1) 
 
-                        //using (LogDataContext data = new LogDataContext())
-                        //{
-                        //    var logs = data.LogData
-                        //        .Where(p => p.TimeVal >= StartDate).Where(p => p.TimeVal <= FinishDate)
-                        //        .Where(p => p.Mode == 1).Where(p => p.Event == 32)
-                        //        .Join(data.Persons, l => l.HozOrgan,
-                        //        p => p.ID, (l, p) => new pLogData
-                        //        {
-                        //            HozOrgan = l.HozOrgan,
-                        //            LastName = p.Name,
-                        //            TimeVal = l.TimeVal,
-                        //            Remark = l.Remark
-
-                        //        }).ToList();
-                        //}
-                        ListLogData = GetListLDIO(queryOne);
+                               SElect  i.HozOrgan Id,  l.Name SurName, d.Name Division,  i.TimeVal input From input i 
+                               Join pList l on(l.ID = i.HozOrgan) 
+                               Join PDivision d on(d.ID = l.Section) 
+                               Where l.ID = {SelectedPerson.ID} AND i.first = 1 Order by i.TimeVal";
+                            ListLogData = GetListLDIO(queryOne);
+                        }
                     }
+                  
                     else if (SelectedGroup == GroupList[3])
                     {
-
-                        queryOne = @$"With output as(
+                        if (IsAllPerson)
+                        {
+                            queryOne = @$"With output as(
                                Select p.HozOrgan, p.mode, p.TimeVal, 
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
                                From pLogData p 
@@ -609,7 +651,22 @@ namespace ACS.ViewModels
                                Join pList l on(l.ID = o.HozOrgan) 
                                Join PDivision d on(d.ID = l.Section) 
                                Where o.first = 1 Order by o.TimeVal";
-                        ListLogData = GetListLDIO(queryOne);
+                            ListLogData = GetListLDIO(queryOne); 
+                        }
+                        else if (SelectedPerson != null)
+                        {
+                            queryOne = @$"With output as(
+                               Select p.HozOrgan, p.mode, p.TimeVal, 
+                               Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
+                               From pLogData p 
+                               Where (p.TimeVal >= '{StartDate}' AND p.TimeVal <= '{FinishDate}') AND p.Event = 32 AND p.Mode = 2) 
+
+                               SElect  o.HozOrgan Id,  l.Name SurName, d.Name Division,  o.TimeVal output From output o 
+                               Join pList l on(l.ID = o.HozOrgan) 
+                               Join PDivision d on(d.ID = l.Section) 
+                               Where l.ID = {SelectedPerson.ID} AND o.first = 1 Order by o.TimeVal";
+                            ListLogData = GetListLDIO(queryOne);
+                        }
                     }
                     List<LogDataIO> GetListLDIO(string queryOne, string? queryTwo = null, bool isOutput = false)
                     {
@@ -634,10 +691,11 @@ namespace ACS.ViewModels
                         return list;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-
-                    throw;
+                   
+                        Window.ShowDialog(ex.Message);
+                   
                 }
             });
         }
@@ -653,7 +711,9 @@ namespace ACS.ViewModels
 
         private void OnFormSelectedPersonCommandExecute(object? obj)
         {
-            string queryOne = @$"With input as(
+            try
+            {
+                string queryOne = @$"With input as(
                                Select p.HozOrgan, p.TimeVal, 
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
                                From pLogData p 
@@ -665,7 +725,7 @@ namespace ACS.ViewModels
 
 
 
-            string queryTwo = @$"With output as(
+                string queryTwo = @$"With output as(
                                Select p.HozOrgan, p.TimeVal,
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal desc) last 
                                From pLogData p 
@@ -677,42 +737,47 @@ namespace ACS.ViewModels
 
 
 
-            var list = LogData.GetLogDataFromDataTable(queryOne, queryTwo);
-            foreach (var item in list)
-            {
-                if (item.EntryTime is DateTime d1 && d1.TimeOfDay > StartTimePerson.TimeOfDay)
+                var list = LogData.GetLogDataFromDataTable(queryOne, queryTwo);
+                foreach (var item in list)
                 {
-                    item.IsLateEntry = true;
-                }
-                if (item.ExitTime is DateTime d2 && d2.TimeOfDay < ExitTimePerson.TimeOfDay)
-                {
-                    item.IsEarlyExit = true;
-                }
-            }
-            ListDataPerson = list;
-            double k = 0;
-            foreach (var item in ListDataPerson)
-            {
-                var m = TotalWorkTimeMinute;
-                if (item.EntryTime is DateTime i)
-                {
-                    var t = StartTimePerson.TimeOfDay - i.TimeOfDay;
-                    if (t.TotalMinutes < 0)
+                    if (item.EntryTime is DateTime d1 && d1.TimeOfDay > StartTimePerson.TimeOfDay)
                     {
-                        m += t.TotalMinutes;
+                        item.IsLateEntry = true;
+                    }
+                    if (item.ExitTime is DateTime d2 && d2.TimeOfDay < ExitTimePerson.TimeOfDay)
+                    {
+                        item.IsEarlyExit = true;
                     }
                 }
-                if (item.ExitTime is DateTime e)
+                ListDataPerson = list;
+                double k = 0;
+                foreach (var item in ListDataPerson)
                 {
-                    var t = e.TimeOfDay - ExitTimePerson.TimeOfDay;
-                    if (t.TotalMinutes < 0)
+                    var m = TotalWorkTimeMinute;
+                    if (item.EntryTime is DateTime i)
                     {
-                        m += t.TotalMinutes;
+                        var t = StartTimePerson.TimeOfDay - i.TimeOfDay;
+                        if (t.TotalMinutes < 0)
+                        {
+                            m += t.TotalMinutes;
+                        }
                     }
+                    if (item.ExitTime is DateTime e)
+                    {
+                        var t = e.TimeOfDay - ExitTimePerson.TimeOfDay;
+                        if (t.TotalMinutes < 0)
+                        {
+                            m += t.TotalMinutes;
+                        }
+                    }
+                    k += m;
                 }
-                k += m;
+                TotalWorkTimeHour = k / 60;
             }
-            TotalWorkTimeHour = k / 60;
+            catch (Exception ex)
+            {
+                Window.ShowDialog(ex.Message);
+            }
         }
         #endregion
         #endregion
@@ -752,6 +817,8 @@ namespace ACS.ViewModels
             #endregion
             //  _CollectionPerson.Filter += OnPersonFilterSelectedDivivision;
             _CollectionPerson.Filter += OnPersonFilter;
+
+            Window = new DialogWindow();
         }
     }
 }

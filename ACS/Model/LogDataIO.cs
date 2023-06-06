@@ -58,7 +58,7 @@ namespace ACS.Model
                 return logData;
             }
             else
-                throw new ArgumentException("Данные за выбранный период для этого сотрудника отсутствуют!");//TODO:Создать окно сообщений
+                throw new ArgumentException("Данные за выбранный период отсутствуют!");
 
         }
 
