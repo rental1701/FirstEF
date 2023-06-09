@@ -5,19 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:inf="clr-namespace:ACS.Infrastructure"
-        xmlns:vm="clr-namespace:ACS.ViewModels"
-        
+        xmlns:vm="clr-namespace:ACS.ViewModels"       
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-    xmlns:ws="clr-namespace:ACS.ViewModels.WorkSchedules"
-         xmlns:fa="http://schemas.fontawesome.com/icons/"
+        xmlns:ws="clr-namespace:ACS.ViewModels.WorkSchedules"
+        xmlns:fa="http://schemas.fontawesome.com/icons/"
         xmlns:conv="clr-namespace:ACS.Infrastructure.Converters"
         xmlns:local="clr-namespace:ACS"
         mc:Ignorable="d"
-        Title="ACS" Height="850" Width="1500">
+        Title="ACS" Height="850" Width="1800">
     <Window.DataContext>
         <vm:СheckpointVM/>
     </Window.DataContext>
     <Window.Resources>
+        <conv:PersonConverter x:Key="PersonConParam"/>
         <inf:ExcelSaveCommand x:Key="excelSave"/>
         <vm:PersonListVM x:Key="PersonList"/>
     </Window.Resources>
@@ -28,7 +28,7 @@
                     <ColumnDefinition Width="91.5"/>
                     <ColumnDefinition Width="7.5"/>
                     <ColumnDefinition Width="250"/>
-                    <ColumnDefinition Width="900"/>
+                    <ColumnDefinition Width="850"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
@@ -44,11 +44,11 @@
                                   FontSize="14" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <Button Command="{Binding FormCommand}" Height="20"
-                            Content="Сформировать" Width="150" Margin="34,10" HorizontalAlignment="Center"
+                        <Button Command="{Binding FormCommand}" Name="ExcellAll"
+                            Content="Сформировать" Margin="34,10,10,10" HorizontalAlignment="Center"
                             Style="{StaticResource UpdateButton}"/>
-                        <Button Content="Excel" Command="{Binding Source={StaticResource excelSave}, Path=SaveCommand}"
-                                CommandParameter="{Binding ListLogData}"/>
+                        <Button  Command="{Binding Source={StaticResource excelSave}, Path=SaveCommand}"
+                                CommandParameter="{Binding ListLogData}" Style="{StaticResource ExcelButton}"/>
                     </StackPanel>
                     <GroupBox Header="Рабочий день" Margin="10,5" Padding="5">
                         <StackPanel Orientation="Vertical">
@@ -273,24 +273,38 @@
                     </Border>
                     <Grid Grid.Row="1" Margin="5,10,5,2">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="70"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Vertical">
                             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                                <Label Content="C:"/>
-                                <tk:DateTimePicker Value="{Binding StartDatePerson}" Margin="2,2,15,2"/>
-                                <Label Content="До:"/>
-                                <tk:DateTimePicker Value="{Binding FinishDatePerson}" Margin="2"/>
-                                <Button Content="Применить" Command="{Binding FormSelectedPersonCommand}" Margin="10,2"/>
+                                <Label Content="C:" VerticalAlignment="Center"/>
+                                <tk:DateTimePicker Value="{Binding StartDatePerson}" FontSize="14" 
+                                                   FontWeight="DemiBold" VerticalAlignment="Center"/>
+                                <Label Content="До:" VerticalAlignment="Center"/>
+                                <tk:DateTimePicker Value="{Binding FinishDatePerson}"  FontSize="14"
+                                                   FontWeight="DemiBold" VerticalAlignment="Center"/>
+                                <Button x:Name="UpdatePerson" Content="Обновить" Command="{Binding FormSelectedPersonCommand}" 
+                                        Style="{StaticResource UpdateButton}" Margin="10,2">
+                                    
+                                </Button>
+                                <Button Command="{Binding Source={StaticResource excelSave},Path=SavePersonDataCommand}" 
+                                        Name="ExcelPerson" Style="{StaticResource ExcelButton}">
+                                    <Button.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource PersonConParam}">
+                                            <Binding Path="ListDataPerson"/>
+                                            <Binding Path="SelectedPerson"/>
+                                        </MultiBinding>
+                                    </Button.CommandParameter>
+                                </Button>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="С:" HorizontalAlignment="Center" Margin="5"/>
+                                    <Label Content="С:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5"/>
                                     <tk:TimePicker Value="{Binding StartTimePerson}" Width="100" Margin="5" HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="До:" HorizontalAlignment="Center" Margin="10,5"/>
+                                    <Label Content="До:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"/>
                                     <tk:TimePicker Value="{Binding ExitTimePerson}" Width="100" Margin="5" HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">

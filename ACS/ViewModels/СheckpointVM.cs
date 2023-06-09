@@ -70,7 +70,7 @@ namespace ACS.ViewModels
                 {
                     if (SelectedGroup == "По подразделениям")
                     {
-                        
+
                         IsVisiableTools = true;
                         SelectedDivision = Divisions?.First();
                         //_CollectionPerson.Filter -= OnPersonFilter;
@@ -260,6 +260,7 @@ namespace ACS.ViewModels
             get => _SelectedPersonIO;
             set
             {
+
                 if (Set(ref _SelectedPersonIO, value) && _SelectedPersonIO != null)
                 {
 
@@ -308,7 +309,7 @@ namespace ACS.ViewModels
         /// </summary>
         public bool IsUpdateSelectedPerson
         {
-            get => _IsUpdateSelectedPerson;
+            get => _IsUpdateSelectedPerson = true;
             set => Set(ref _IsUpdateSelectedPerson, value);
         }
 
@@ -513,11 +514,11 @@ namespace ACS.ViewModels
 
                                Select o.HozOrgan Id, o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
-                    if (SelectedGroup == GroupList[0] && IsAllPerson)
+                    if (SelectedGroup == GroupList[4] && IsAllPerson)
                     {
                         ListLogData = GetListLDIO(queryOne, queryTwo);
                     }
-                    else if (SelectedGroup == GroupList[0] && SelectedPerson != null)
+                    else if (SelectedGroup == GroupList[4] && SelectedPerson != null)
                     {
                         queryOne = @$"With input as(
                                Select p.HozOrgan, p.mode, p.TimeVal, 
@@ -619,9 +620,9 @@ namespace ACS.ViewModels
                                Join pList l on(l.ID = i.HozOrgan) 
                                Join PDivision d on(d.ID = l.Section) 
                                Where i.first = 1 Order by i.TimeVal";
-                            ListLogData = GetListLDIO(queryOne); 
+                            ListLogData = GetListLDIO(queryOne);
                         }
-                        else if(SelectedPerson != null)
+                        else if (SelectedPerson != null)
                         {
                             queryOne = @$"With input as(
                                Select p.HozOrgan, p.mode, p.TimeVal, 
@@ -636,7 +637,7 @@ namespace ACS.ViewModels
                             ListLogData = GetListLDIO(queryOne);
                         }
                     }
-                  
+
                     else if (SelectedGroup == GroupList[3])
                     {
                         if (IsAllPerson)
@@ -651,7 +652,7 @@ namespace ACS.ViewModels
                                Join pList l on(l.ID = o.HozOrgan) 
                                Join PDivision d on(d.ID = l.Section) 
                                Where o.first = 1 Order by o.TimeVal";
-                            ListLogData = GetListLDIO(queryOne); 
+                            ListLogData = GetListLDIO(queryOne);
                         }
                         else if (SelectedPerson != null)
                         {
@@ -667,6 +668,10 @@ namespace ACS.ViewModels
                                Where l.ID = {SelectedPerson.ID} AND o.first = 1 Order by o.TimeVal";
                             ListLogData = GetListLDIO(queryOne);
                         }
+                    }
+                    else if(SelectedGroup == GroupList[0] && IsAllPerson)
+                    {
+
                     }
                     List<LogDataIO> GetListLDIO(string queryOne, string? queryTwo = null, bool isOutput = false)
                     {
@@ -691,11 +696,15 @@ namespace ACS.ViewModels
                         return list;
                     }
                 }
+                catch (ArgumentException ex)
+                {
+                    ListLogData = null;
+                    Window.ShowDialog(ex.Message);
+                }
                 catch (Exception ex)
                 {
-                   
-                        Window.ShowDialog(ex.Message);
-                   
+                    Window.ShowDialog(ex.Message);
+
                 }
             });
         }
@@ -785,10 +794,12 @@ namespace ACS.ViewModels
         public СheckpointVM()
         {
             GroupList = new List<string>
-            {"Первый вход - Последний выход",
+            {
+            "Первый вход - Последний выход",
             "По подразделениям",
             "Только вход",
-            "Только выход"
+            "Только выход",
+            "Все данные за выбранный период"
             };
             _SelectedGroup = GroupList[0];
             Dir.Checkpoint = this;

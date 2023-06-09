@@ -11,7 +11,7 @@
         MaxHeight="300" MaxWidth="500" MinHeight="300" MinWidth="500">
     <DockPanel>
         <Border BorderThickness="1" BorderBrush="Black" Margin="5">
-            <DockPanel  VerticalAlignment="Center" Margin="20">
+            <DockPanel  VerticalAlignment="Center" Margin="20" HorizontalAlignment="Center">
                 <fa:ImageAwesome DockPanel.Dock="Left" Icon="Solid_Info" Height="26" Foreground="CadetBlue"/>
                 <TextBlock x:Name="txtMessage" HorizontalAlignment="Left" TextWrapping="Wrap" Padding="5"
                    VerticalAlignment="Center" Margin="10" FontSize="16" />

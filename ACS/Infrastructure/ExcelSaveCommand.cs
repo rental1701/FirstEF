@@ -47,9 +47,53 @@ namespace ACS.Infrastructure
             }
         }
 
+
+        public ICommand SavePersonDataCommand { get; }
+        private bool CanSavePersonDataCommandExecuted(object? arg) =>
+            arg is object[] pd && pd[0] is List<LogData> &&  pd[1] is Person;
+       
+
+        private void OnSavePersonDataCommandExecuted(object? obj)
+        {
+           
+            try
+            {
+                if (obj is object[] pd && pd[0] is List<LogData> logs && pd[1] is Person p)
+                {
+                    string file = p.FullName + ".xlsx";
+                    var saveWindow = new SaveFileDialog
+                    {
+                        Title = "Сохранение файла",
+                        Filter = "Книга Escel(.xlsx)|.xlsx",
+                        FileName = file,
+                        RestoreDirectory = true
+                    };
+
+                    if (saveWindow.ShowDialog() != true)
+                        return;
+
+                    file = saveWindow.FileName;
+                    Export.ExportPersonToExcel(p, logs, file);
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                DialogWindow window = new();
+                window.ShowDialog(ex.Message);
+            }
+        }
+
+       
+
         public ExcelSaveCommand()
         {
             SaveCommand = new LambdaCommand(OnSaveCommandExecuted, CanSaveCommandExecuted);
+
+            SavePersonDataCommand = new LambdaCommand(OnSavePersonDataCommandExecuted, CanSavePersonDataCommandExecuted);
         }
+
+       
+
     }
 }
