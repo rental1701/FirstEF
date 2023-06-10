@@ -744,8 +744,6 @@ namespace ACS.ViewModels
                                SElect i.TimeVal input From input i                              
                                Where i.first = 1 Order by i.TimeVal";
 
-
-
                 string queryTwo = @$"With output as(
                                Select p.HozOrgan, p.TimeVal,
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal desc) last 
@@ -755,8 +753,6 @@ namespace ACS.ViewModels
 
                                Select o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
-
-
 
                 var list = LogData.GetLogDataFromDataTable(queryOne, queryTwo);
                 foreach (var item in list)
