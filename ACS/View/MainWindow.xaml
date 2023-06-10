@@ -218,7 +218,7 @@
                       HorizontalAlignment="Center" Background="LightBlue" Margin="0,2,0,2" />
                 <Grid Grid.Column="5" >
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="270"/>
+                        <RowDefinition Height="300"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Border  BorderBrush="LightSteelBlue" Grid.Row="0" 
@@ -419,7 +419,7 @@
         <TabItem Header="Список сотруднков" DataContext="{Binding Source={StaticResource PersonList}}">
             <Grid Margin="5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="370"/>
+                    <ColumnDefinition Width="380"/>
                     <ColumnDefinition Width="400"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>

@@ -55,14 +55,18 @@ namespace ACS.Model
                             {
                                 if (log.EntryTime?.Date == t.Date)
                                 {
-                                    log.ExitTime = date; 
-                                    
+                                    log.ExitTime = date;
+                                    data.Rows[row].Delete();
+                                    data.AcceptChanges();
+                                    break;
                                 }
                                 int c = Convert.ToInt32(t.Day - log.EntryTime?.Day);
                                 int[] number = { 1, -30, -29, -28 };
                                 if (Array.Exists(number, x => x == c))
                                 {
                                     log.ExitTime = t;
+                                    data.Rows[row].Delete();
+                                    data.AcceptChanges();
                                     break;
                                 }
                             }
