@@ -1,6 +1,7 @@
 ﻿<Window x:Class="ACS.View.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
@@ -90,7 +91,7 @@
                             <fa:ImageAwesome Height="12" Icon="Solid_Search" Margin="3,0"/>
                             <TextBox Text="{Binding SecondNameFilter, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,10,0"/>
                         </DockPanel>
-                        <ListBox ItemsSource="{Binding CollectionPerson}" SelectedItem="{Binding SelectedPerson}" Margin="5,5,10,0" IsSynchronizedWithCurrentItem="False" 
+                        <ListBox ItemsSource="{Binding CollectionPerson}" SelectedItem="{Binding SelectedPersonFromList}" Margin="5,5,10,0" IsSynchronizedWithCurrentItem="False" 
                              VirtualizingPanel.IsContainerVirtualizable="True" VirtualizingPanel.IsVirtualizing="True" Height="300">
                             <ListBox.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -136,24 +137,24 @@
                         </Style>
                     </DataGrid.Resources>
                     <DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Фамилия">
+                        <DataGridTemplateColumn Header="Фамилия" CanUserSort="True" SortMemberPath="SurName">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding SurName}" Style="{StaticResource txtStyle}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Подразделение">
+                        <DataGridTemplateColumn Header="Подразделение" CanUserSort="True" SortMemberPath="Division">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Division}" Style="{StaticResource txtStyle}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Время входа">
+                        <DataGridTemplateColumn Header="Время входа" CanUserSort="True" SortMemberPath="FirstInput">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="LogDataIO">
-                                    <TextBlock Text="{Binding FirstInput, StringFormat=' dd-MM-yyyy HH:mm '}">
+                                    <TextBlock Text="{Binding FirstInput, StringFormat=' dd-MM-yyyy HH:mm  (ddd)', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture }}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -173,10 +174,10 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="Время выхода">
+                        <DataGridTemplateColumn Header="Время выхода" CanUserSort="True" SortMemberPath="LastOutput">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="LogDataIO">
-                                    <TextBlock Text="{Binding LastOutput, StringFormat=' dd-MM-yyyy HH:mm '}">
+                                    <TextBlock Text="{Binding LastOutput, StringFormat=' dd-MM-yyyy HH:mm  (ddd)', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture }}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -301,14 +302,14 @@
                             <StackPanel Orientation="Horizontal">
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="С:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5"/>
-                                    <tk:TimePicker Value="{Binding StartTimePerson}" Width="100" Margin="0,5" HorizontalAlignment="Center"/>
+                                    <tk:TimePicker Value="{Binding StartTimePerson}" Width="75" Margin="0,5" HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <Label Content="До:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5,0,5"/>
-                                    <tk:TimePicker Value="{Binding ExitTimePerson}" Width="100" Margin="0,5" HorizontalAlignment="Center"/>
+                                    <tk:TimePicker Value="{Binding ExitTimePerson}" Width="75" Margin="0,5" HorizontalAlignment="Center"/>
                                 </StackPanel>
-                                <CheckBox Content="Обновлять" IsChecked="{Binding IsUpdateSelectedPerson}" VerticalAlignment="Center" Margin="5,0"
-                                          ToolTip="Автоматически обновлять данные при выборе нового сотрудника"/>
+                                <CheckBox Content="Зафиксировать" IsChecked="{Binding IsUpdateSelectedPerson}" VerticalAlignment="Center" Margin="5,0"
+                                          ToolTip="Не обновлять данные при выборе нового сотрудника"/>
                             </StackPanel>
                         </StackPanel>
                         <Grid Grid.Row="1">
@@ -321,7 +322,7 @@
                                     <DataGridTemplateColumn Header="Вход">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding EntryTime, StringFormat=' dd-MM-yyyy  HH:mm '}">
+                                                <TextBlock Text="{Binding EntryTime, StringFormat=' dd-MM-yyyy  HH:mm  (ddd)', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture }}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
@@ -341,7 +342,7 @@
                                     <DataGridTemplateColumn Header="Выход">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ExitTime, StringFormat=' dd-MM-yyyy  HH:mm '}">
+                                                <TextBlock Text="{Binding ExitTime, StringFormat=' dd-MM-yyyy  HH:mm  (ddd)', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture }}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
@@ -368,10 +369,11 @@
 
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="10,5">
-                                    <TextBlock Text="Дней: "/>
+                            <TextBlock Grid.Row="1" VerticalAlignment="Center" FontSize="14" Text="{Binding ListDataPerson.Count,StringFormat=Дней: {0}}"/>
+                            <!--<StackPanel Orientation="Horizontal" Grid.Row="1" Margin="10,5">
+                                    <TextBlock Text="Дней: "  Grid.Row="1"/>
                                 <TextBlock Text="{Binding ListDataPerson.Count}"/>
-                            </StackPanel>
+                            </StackPanel>-->
                         </Grid>
                     </Grid>
                 </Grid>
