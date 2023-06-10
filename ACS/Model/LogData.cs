@@ -51,10 +51,22 @@ namespace ACS.Model
                         while (row < data.Rows.Count)
                         {
                             DateTime? date = ConvertToDateTime(data.Rows[row].ItemArray[0]);
-                            if (date is DateTime t && log.EntryTime?.Date == t.Date)
+                            if (date is DateTime t)
                             {
-                                log.ExitTime = date;
+                                if (log.EntryTime?.Date == t.Date)
+                                {
+                                    log.ExitTime = date; 
+                                    
+                                }
+                                int c = Convert.ToInt32(t.Day - log.EntryTime?.Day);
+                                int[] number = { 1, -30, -29, -28 };
+                                if (Array.Exists(number, x => x == c))
+                                {
+                                    log.ExitTime = t;
+                                    break;
+                                }
                             }
+
                             row++;
                         }
                     }

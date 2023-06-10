@@ -35,12 +35,12 @@
                 <StackPanel Grid.Column="0" Grid.ColumnSpan="3" >
                     <StackPanel Orientation="Horizontal" Margin="5" >
                         <TextBlock Text="От:" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="14"/>
-                        <tk:DateTimePicker Value="{Binding StartDate}" Width="190"  Padding="1"
+                        <tk:DateTimePicker Value="{Binding StartDate}" Width="200"  Padding="1"
                                    FontSize="14" FontWeight="DemiBold" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="5" >
                         <TextBlock Text="До:" Margin="0,0,8,0" VerticalAlignment="Center"  FontSize="14"/>
-                        <tk:DateTimePicker Value="{Binding FinishDate}" Width="190" Padding="1"
+                        <tk:DateTimePicker Value="{Binding FinishDate}" Width="200" Padding="1"
                                   FontSize="14" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
@@ -153,7 +153,7 @@
                         <DataGridTemplateColumn Header="Время входа">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="LogDataIO">
-                                    <TextBlock Text="{Binding FirstInput, StringFormat=' yyyy-MM-dd HH:mm '}">
+                                    <TextBlock Text="{Binding FirstInput, StringFormat=' dd-MM-yyyy HH:mm '}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -176,7 +176,7 @@
                         <DataGridTemplateColumn Header="Время выхода">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="LogDataIO">
-                                    <TextBlock Text="{Binding LastOutput, StringFormat=' yyyy-MM-dd HH:mm '}">
+                                    <TextBlock Text="{Binding LastOutput, StringFormat=' dd-MM-yyyy HH:mm '}">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextAlignment" Value="Center"/>
@@ -279,10 +279,10 @@
                         <StackPanel Grid.Row="0" Orientation="Vertical">
                             <StackPanel Grid.Row="0" Orientation="Horizontal">
                                 <Label Content="C:" VerticalAlignment="Center"/>
-                                <tk:DateTimePicker Value="{Binding StartDatePerson}" FontSize="14" 
+                                <tk:DateTimePicker Value="{Binding StartDatePerson}" FontSize="14" Height="30"
                                                    FontWeight="DemiBold" VerticalAlignment="Center"/>
                                 <Label Content="До:" VerticalAlignment="Center"/>
-                                <tk:DateTimePicker Value="{Binding FinishDatePerson}"  FontSize="14"
+                                <tk:DateTimePicker Value="{Binding FinishDatePerson}"  FontSize="14" Height="30"
                                                    FontWeight="DemiBold" VerticalAlignment="Center"/>
                                 <Button x:Name="UpdatePerson" Content="Обновить" Command="{Binding FormSelectedPersonCommand}" 
                                         Style="{StaticResource UpdateButton}" Margin="10,2">
@@ -325,7 +325,7 @@
                                     <DataGridTemplateColumn Header="Вход">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding EntryTime, StringFormat='dd-MM-yyyy  HH:mm'}">
+                                                <TextBlock Text="{Binding EntryTime, StringFormat=' dd-MM-yyyy  HH:mm '}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
@@ -345,7 +345,7 @@
                                     <DataGridTemplateColumn Header="Выход">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding ExitTime, StringFormat='dd-MM-yyyy  HH:mm'}">
+                                                <TextBlock Text="{Binding ExitTime, StringFormat=' dd-MM-yyyy  HH:mm '}">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
@@ -365,7 +365,7 @@
                                     <DataGridTemplateColumn Header="Рабочее время">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding WorkTime}"/>
+                                                <TextBlock Text="{Binding WorkTime}" HorizontalAlignment="Center"/>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
@@ -526,7 +526,6 @@
                         </WrapPanel>
                     </DockPanel>
                 </Border>
-
             </Grid>
         </TabItem>
     </TabControl>

@@ -249,7 +249,9 @@ namespace ACS.ViewModels
             {
                 Set(ref _SelectedPerson, value);
                 if (SelectedPerson != null)
-                    IsAllPerson = false;
+                IsAllPerson = false;
+                else
+                    ListDataPerson = null;
             }
         }
 
@@ -671,27 +673,37 @@ namespace ACS.ViewModels
                     }
                     else if(SelectedGroup == GroupList[0] && IsAllPerson)
                     {
+                        queryOne = $@"Select distinct i.HozOrgan Id, l.Name SurName, d.Name Division, MIN(i.TimeVal) over (partition by i.hozOrgan) input from pLogData i
+                                      Join pList l on(l.ID = i.HozOrgan) 
+                                      Join PDivision d on(d.ID = l.Section) 
+                                      where i.Event = 32  and i.TimeVal >= '{StartDate}' AND  i.TimeVal <= '{FinishDate}' and i.Mode = 1";
+
+                        queryTwo = $@"Select distinct o.HozOrgan Id,  MAX(o.TimeVal) over (partition by o.hozOrgan) output from pLogData o                                  
+                                      where o.Event = 32  and o.TimeVal >= '{StartDate}' AND  o.TimeVal <= '{FinishDate}' and o.Mode = 2";
+
+                        ListLogData = GetListLDIO(queryOne, queryTwo, isShort:true);
+
 
                     }
-                    List<LogDataIO> GetListLDIO(string queryOne, string? queryTwo = null, bool isOutput = false)
+                    List<LogDataIO> GetListLDIO(string queryOne, string? queryTwo = null, bool isOutput = false, bool isShort = false)
                     {
                         DataTable data = SclDataConnection.GetData(queryOne);
-                        List<LogDataIO> list = LogDataIO.GetLogDataIO(data);
+                        List<LogDataIO> list = LogDataIO.GetLogDataIO(data, StartTime.TimeOfDay);
                         if (queryTwo != null)
                         {
                             data = SclDataConnection.GetData(queryTwo);
-                            LogDataIO.InitialLastOutput(list, data);
-                            foreach (var item in list) //формирование главного списка
-                            {
-                                if (item.FirstInput is DateTime d1 && d1.TimeOfDay > StartTime.TimeOfDay)
-                                {
-                                    item.IsLateEntry = true;
-                                }
-                                if (item.LastOutput is DateTime d2 && d2.TimeOfDay < ExitTime.TimeOfDay)
-                                {
-                                    item.IsEarlyExit = true;
-                                }
-                            }
+                            LogDataIO.InitialLastOutput(list, data, ExitTime.TimeOfDay, isShort);
+                            //foreach (var item in list) //формирование главного списка
+                            //{
+                            //    if (item.FirstInput is DateTime d1 && d1.TimeOfDay > StartTime.TimeOfDay)
+                            //    {
+                            //        item.IsLateEntry = true;
+                            //    }
+                            //    if (item.LastOutput is DateTime d2 && d2.TimeOfDay < ExitTime.TimeOfDay)
+                            //    {
+                            //        item.IsEarlyExit = true;
+                            //    }
+                            //}
                         }
                         return list;
                     }

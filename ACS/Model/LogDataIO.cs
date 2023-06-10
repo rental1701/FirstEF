@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
 using static ACS.Infrastructure.ParseSQLData;
 
@@ -35,7 +36,7 @@ namespace ACS.Model
 
         private string? _SurName;
         /// <summary>Фамилия</summary>
-        
+
         public string? SurName
         {
             get => _SurName != null ? Regex.Replace(_SurName, "\\d+_", "") : "Неизвестно";
@@ -44,7 +45,7 @@ namespace ACS.Model
         /// <summary>Подразделение</summary>
         public string? Division { get; set; } = null!;
 
-        public static List<LogDataIO> GetLogDataIO(DataTable data)
+        public static List<LogDataIO> GetLogDataIO(DataTable data, TimeSpan timeEntry)
         {
             if (data.Rows.Count != 0)
             {
@@ -52,7 +53,7 @@ namespace ACS.Model
                 int indexRow = 0;
                 while (indexRow < data.Rows.Count)
                 {
-                    logData.Add(new(data, indexRow));
+                    logData.Add(new(data, indexRow, timeEntry));
                     indexRow++;
                 }
                 return logData;
@@ -62,23 +63,70 @@ namespace ACS.Model
 
         }
 
-        public static void InitialLastOutput(List<LogDataIO> logDatas, DataTable data)
+        public static void InitialLastOutput(List<LogDataIO> logDatas, DataTable data, TimeSpan timeExit, bool isShort = false)
         {
-            foreach (LogDataIO log in logDatas)
+            if (!isShort)
             {
-                int row = 0;
-                while (row < data.Rows.Count)
-                {            
-                    DateTime? date = ConvertToDateTime(data.Rows[row].ItemArray[1]);
-                    if (date is DateTime d  && d.Date == log.FirstInput?.Date 
-                        && TryParseIntBD(data.Rows[row].ItemArray[0]) == log.HozOrgan)
+                foreach (LogDataIO log in logDatas)
+                {
+                    int row = 0;
+                    while (row < data.Rows.Count)
                     {
-                        log.LastOutput = date;
-                    }  
-                    row++;
+                        DateTime? date = ConvertToDateTime(data.Rows[row].ItemArray[1]);
+                        if (date is DateTime d &&
+                             TryParseIntBD(data.Rows[row].ItemArray[0]) == log.HozOrgan)
+                        {
+                            if (d.Date == log.FirstInput?.Date)
+                            {
+                                if (d.TimeOfDay < timeExit)
+                                {
+                                    log.IsEarlyExit = true;
+                                }
+                                log.LastOutput = d;
+
+                                break;
+                            }
+                            int c = Convert.ToInt32(d.Day - log.FirstInput?.Day);
+                            int[] number = { 1, -30, -29, -28 };
+
+                            if (Array.Exists(number, x => x == c))
+                            {
+                                if (d.TimeOfDay < timeExit)
+                                {
+                                    log.IsEarlyExit = true;
+                                }
+                                log.LastOutput = d;
+                                break;
+                            }
+
+                        }
+                        row++;
+                    }
+                } 
+            }
+            else
+            {
+                foreach (LogDataIO log in logDatas)
+                {
+                    foreach (DataRow row in data.Rows)
+                    {
+                        int id = TryParseIntBD(row.ItemArray[0]);
+                        if (log.HozOrgan == id)
+                        {
+                            DateTime? date = ConvertToDateTime(row.ItemArray[1]);
+                            log.LastOutput = date;
+                            if (date?.TimeOfDay < timeExit)
+                                log.IsEarlyExit= true;
+
+                        }                       
+                    }
                 }
+               
             }
         }
+
+
+      
 
         public override bool Equals(object? obj)
         {
@@ -94,7 +142,7 @@ namespace ACS.Model
             return base.GetHashCode();
         }
 
-        public LogDataIO(DataTable data, int row)
+        public LogDataIO(DataTable data, int row, TimeSpan time)
         {
             int c = 0;
             while (c < data.Columns.Count)
@@ -112,9 +160,13 @@ namespace ACS.Model
                         break;
                     case "input":
                         FirstInput = ConvertToDateTime(data.Rows[row].ItemArray[c]);
+                        if (FirstInput?.TimeOfDay > time)
+                            IsLateEntry = true;
                         break;
                     case "output":
                         LastOutput = ConvertToDateTime(data.Rows[row].ItemArray[c]);
+                        if (LastOutput?.TimeOfDay < time)
+                            IsEarlyExit = true;
                         break;
                 }
                 c++;
