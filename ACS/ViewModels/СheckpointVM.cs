@@ -73,15 +73,12 @@ namespace ACS.ViewModels
 
                         IsVisiableTools = true;
                         SelectedDivision = Divisions?.First();
-                        //_CollectionPerson.Filter -= OnPersonFilter;
-
                     }
                     else
                     {
                         IsVisiableTools = false;
                         SelectedDivision = null;
                     }
-                    // _CollectionPerson.Filter += OnPersonFilter;
                 }
             }
         }
@@ -118,15 +115,7 @@ namespace ACS.ViewModels
                 if (Set(ref _SelectedDivision, value))
                 {
                     if (SelectedGroup == "По подразделениям")
-                    {
-                        //_CollectionPerson.Source = null;
-                        //_CollectionPerson.Source = from d in Divisions
-                        //                           from p in d.Persons
-                        //                           where p.DivisionId == SelectedDivision?.ID select p;
-
-                        //  _CollectionPerson.Filter -= OnPersonFilter;
-                        //_CollectionPerson.Filter += OnPersonFilterSelectedDivivision;
-
+                    {   
                         _CollectionPerson.View?.Refresh();
                     }
                     _CollectionPerson.View?.Refresh();
@@ -270,12 +259,6 @@ namespace ACS.ViewModels
                     {
                         Person e = new();
 
-                        // = user.Persons
-                        //    .Include(p => p.Company)
-                        //    .Include(p => p.Post).Where(p => p.ID == _SelectedPersonIO.HozOrgan)
-                        //    .Include(d => d.Division)
-                        //    .ToList();
-
                         var person = Divisions?.SelectMany(d => d?.Persons)
                         .Where(p => p.ID == SelectedPersonIO?.HozOrgan).FirstOrDefault();
                         e = (Person)person.Clone();
@@ -343,27 +326,7 @@ namespace ACS.ViewModels
             set => Set(ref _ExitTimePerson, value);
         }
 
-        private const int _MAXDURATION = 120;
-        private int _BreakDuration = 48;
 
-        public int BreakDuration
-        {
-            get => _BreakDuration > _MAXDURATION ? _MAXDURATION : _BreakDuration;
-            set => Set(ref _BreakDuration, value);
-        }
-
-        private double _TotalWorkTimeHour;
-
-        public double TotalWorkTimeHour
-        {
-            get => Math.Round(_TotalWorkTimeHour, 2);
-            set => Set(ref _TotalWorkTimeHour, value);
-        }
-        /// <summary>Рабочее время без учета обеда</summary>
-        public double TotalWorkTimeMinute
-        {
-            get => ExitTimePerson.TimeOfDay.TotalMinutes - StartTimePerson.TimeOfDay.TotalMinutes - BreakDuration;
-        }
         #endregion
 
         #region Фильтрация сотрудников по фамилии
@@ -376,8 +339,7 @@ namespace ACS.ViewModels
             {
                 if (!Set(ref _SecondNameFilter, value))
                     return;
-                //_CollectionPerson.Filter -= OnPersonFilterSelectedDivivision;
-                //_CollectionPerson.Filter += OnPersonFilter;
+               
 
                 _CollectionPerson.View?.Refresh();
 
@@ -692,18 +654,7 @@ namespace ACS.ViewModels
                         if (queryTwo != null)
                         {
                             data = SclDataConnection.GetData(queryTwo);
-                            LogDataIO.InitialLastOutput(list, data, ExitTime.TimeOfDay, isShort);
-                            //foreach (var item in list) //формирование главного списка
-                            //{
-                            //    if (item.FirstInput is DateTime d1 && d1.TimeOfDay > StartTime.TimeOfDay)
-                            //    {
-                            //        item.IsLateEntry = true;
-                            //    }
-                            //    if (item.LastOutput is DateTime d2 && d2.TimeOfDay < ExitTime.TimeOfDay)
-                            //    {
-                            //        item.IsEarlyExit = true;
-                            //    }
-                            //}
+                            LogDataIO.InitialLastOutput(list, data, ExitTime.TimeOfDay, isShort);    
                         }
                         return list;
                     }
@@ -767,29 +718,6 @@ namespace ACS.ViewModels
                     }
                 }
                 ListDataPerson = list;
-                double k = 0;
-                foreach (var item in ListDataPerson)
-                {
-                    var m = TotalWorkTimeMinute;
-                    if (item.EntryTime is DateTime i)
-                    {
-                        var t = StartTimePerson.TimeOfDay - i.TimeOfDay;
-                        if (t.TotalMinutes < 0)
-                        {
-                            m += t.TotalMinutes;
-                        }
-                    }
-                    if (item.ExitTime is DateTime e)
-                    {
-                        var t = e.TimeOfDay - ExitTimePerson.TimeOfDay;
-                        if (t.TotalMinutes < 0)
-                        {
-                            m += t.TotalMinutes;
-                        }
-                    }
-                    k += m;
-                }
-                TotalWorkTimeHour = k / 60;
             }
             catch (Exception ex)
             {
@@ -825,16 +753,10 @@ namespace ACS.ViewModels
                      .Include(d => d.Division)
                      .ToList();
 
-                Divisions = db.Divisions.ToList();
-                //Division? temp = Divisions.FirstOrDefault();
-                //if (temp != null)
-                //{
-                //    SelectedDivision = temp;
-                //}
+                Divisions = db.Divisions.ToList();        
                 _CollectionPerson.Source = from p in persons select p;
             }
             #endregion
-            //  _CollectionPerson.Filter += OnPersonFilterSelectedDivivision;
             _CollectionPerson.Filter += OnPersonFilter;
 
             Window = new DialogWindow();

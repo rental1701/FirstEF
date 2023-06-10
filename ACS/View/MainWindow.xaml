@@ -218,7 +218,7 @@
                       HorizontalAlignment="Center" Background="LightBlue" Margin="0,2,0,2" />
                 <Grid Grid.Column="5" >
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="280"/>
+                        <RowDefinition Height="270"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <Border  BorderBrush="LightSteelBlue" Grid.Row="0" 
@@ -271,9 +271,9 @@
                             </WrapPanel>
                         </DockPanel>
                     </Border>
-                    <Grid Grid.Row="1" Margin="5,10,5,2">
+                    <Grid Grid.Row="1" Margin="5">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="70"/>
+                            <RowDefinition Height="90"/>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Vertical">
@@ -300,16 +300,12 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <StackPanel Orientation="Horizontal">
-                                    <Label Content="С:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5"/>
-                                    <tk:TimePicker Value="{Binding StartTimePerson}" Width="100" Margin="5" HorizontalAlignment="Center"/>
+                                    <Label Content="С:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5"/>
+                                    <tk:TimePicker Value="{Binding StartTimePerson}" Width="100" Margin="0,5" HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <Label Content="До:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5"/>
-                                    <tk:TimePicker Value="{Binding ExitTimePerson}" Width="100" Margin="5" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="Перерыв(мин): "/>
-                                    <TextBox Text="{Binding BreakDuration}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="2" Width="30" MaxWidth="50"/>
+                                    <Label Content="До:" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,5,0,5"/>
+                                    <tk:TimePicker Value="{Binding ExitTimePerson}" Width="100" Margin="0,5" HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <CheckBox Content="Обновлять" IsChecked="{Binding IsUpdateSelectedPerson}" VerticalAlignment="Center" Margin="5,0"
                                           ToolTip="Автоматически обновлять данные при выборе нового сотрудника"/>
@@ -372,15 +368,9 @@
 
                                 </DataGrid.Columns>
                             </DataGrid>
-                            <StackPanel Orientation="Horizontal" Grid.Row="1">
-                                <StackPanel Orientation="Horizontal" Margin="10,5">
-                                    <TextBlock Text="Отработанное время приблизительно: "/>
-                                    <TextBlock Text="{Binding TotalWorkTimeHour, StringFormat='~{0} ч'}"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="10,5">
+                            <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="10,5">
                                     <TextBlock Text="Дней: "/>
-                                    <TextBlock Text="{Binding ListDataPerson.Count}"/>
-                                </StackPanel>
+                                <TextBlock Text="{Binding ListDataPerson.Count}"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
