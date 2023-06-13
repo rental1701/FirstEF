@@ -43,7 +43,7 @@ namespace ACS.ViewModels
         private IDialogWindow Window;
         #endregion
         #region файловая система
-        public WorkSchedulesVM Dir { get; } = new WorkSchedulesVM("C:\\Users\\kiselev\\EF\\FirstEF\\ACS\\WorkPdf");
+        public WorkSchedulesVM Dir { get; } = new WorkSchedulesVM("Z:\\Отдел управления персоналом");//C:\\Users\\kiselev\\EF\\FirstEF\\ACS\\WorkPdf
 
         private WorkSchedulesVM? _SelectedDirectory;
 

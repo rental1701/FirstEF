@@ -11,11 +11,11 @@ namespace ACS.ViewModels.WorkSchedules
 {
     public class WorkSchedulesVM : ViewModel
     {
-        private readonly DirectoryInfo _DirectoryInfo;
+        private  DirectoryInfo _DirectoryInfo;
         public WorkSchedulesVM(string Path)
         {
-            _DirectoryInfo = new DirectoryInfo(Path);
-           
+            PathFile = Path;
+            _DirectoryInfo = new DirectoryInfo(Path);     
         }
 
         public СheckpointVM Checkpoint { get; set; }
@@ -25,6 +25,13 @@ namespace ACS.ViewModels.WorkSchedules
         {
             get => _UriPath;
             set => Set(ref _UriPath, value);
+        }
+        private string _Path;
+
+        public string PathFile
+        {
+            get { return _Path; }
+            set => Set(ref _Path, value);
         }
 
 
@@ -55,7 +62,19 @@ namespace ACS.ViewModels.WorkSchedules
         {
             get
             {
-                return _DirectoryInfo.EnumerateDirectories().Select(dir => new WorkSchedulesVM(dir.FullName) { Checkpoint = this.Checkpoint });
+                try
+                {
+
+                    return _DirectoryInfo.EnumerateDirectories()
+                        .Select(dir => new WorkSchedulesVM(dir.FullName) { Checkpoint = this.Checkpoint })
+                        .Where(d =>d._Path.Contains("Графики работ"));
+                }
+                catch (Exception)
+                {
+                    _DirectoryInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+                    return _DirectoryInfo.EnumerateDirectories()
+                        .Select(dir => new WorkSchedulesVM(dir.FullName) { Checkpoint = this.Checkpoint });
+                }
             }
         }
 
@@ -63,7 +82,8 @@ namespace ACS.ViewModels.WorkSchedules
         {
             get
             {
-                return _DirectoryInfo.EnumerateFiles().Select(f => new FileVM(f.FullName, this));
+                return _DirectoryInfo.EnumerateFiles()
+                    .Select(f => new FileVM(f.FullName, this)).Where(f =>f.Path.Contains("pdf"));
             }
         }
 

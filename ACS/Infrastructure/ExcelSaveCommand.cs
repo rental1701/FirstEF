@@ -34,10 +34,10 @@ namespace ACS.Infrastructure
 
         private bool CanSaveCommandExecuted(object? arg)
         {
-           IsEnableButton = arg is List<LogDataIO> list && list.Count > 0;
+            IsEnableButton = arg is List<LogDataIO> list && list.Count > 0;
             return IsEnableButton;
         }
-            
+
 
         private void OnSaveCommandExecuted(object? obj)
         {
@@ -78,16 +78,23 @@ namespace ACS.Infrastructure
         public ICommand SavePersonDataCommand { get; }
         private bool CanSavePersonDataCommandExecuted(object? arg)
         {
-            IsEnableButtonPerson = arg is object[] pd && pd[0] is List<LogData> &&  pd[1] is Person;
+            IsEnableButtonPerson = arg is object[] pd && pd[0] is List<LogData> && pd[1] is Person;
             return IsEnableButtonPerson;
         }
-       
+
 
         private void OnSavePersonDataCommandExecuted(object? obj)
         {
 
             Task.Run(() =>
             {
+
+                List<(int t, int)> a = new List<(int,int)>
+                {
+                    (1,3 ),
+                    (2,4)
+                };
+                
                 try
                 {
                     IsEnableButtonPerson = false;
@@ -122,7 +129,7 @@ namespace ACS.Infrastructure
             });
         }
 
-       
+
 
         public ExcelSaveCommand()
         {
@@ -131,7 +138,7 @@ namespace ACS.Infrastructure
             SavePersonDataCommand = new LambdaCommand(OnSavePersonDataCommandExecuted, CanSavePersonDataCommandExecuted);
         }
 
-       
+
 
     }
 }
