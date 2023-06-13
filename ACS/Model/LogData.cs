@@ -61,8 +61,8 @@ namespace ACS.Model
                                     break;
                                 }
                                 int c = Convert.ToInt32(t.Day - log.EntryTime?.Day);
-                                int[] number = { 1, -30, -29, -28 };
-                                if (Array.Exists(number, x => x == c))
+                                int number =  1;
+                                if (number == c)
                                 {
                                     log.ExitTime = t;
                                     data.Rows[row].Delete();
@@ -70,8 +70,18 @@ namespace ACS.Model
                                     break;
                                 }
                             }
-
                             row++;
+                        }
+                    }
+                    if (data.Rows.Count != 0)
+                    {
+                        for (int i = 0; i < data.Rows.Count; i++)
+                        {
+                            DateTime? date = ConvertToDateTime(data.Rows[i].ItemArray[0]);
+                            logs.Add(new()
+                            {
+                                ExitTime = date
+                            }) ;
                         }
                     }
                 }

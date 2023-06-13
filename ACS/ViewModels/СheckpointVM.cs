@@ -20,6 +20,25 @@ namespace ACS.ViewModels
     public class СheckpointVM : ViewModel
     {
 
+        #region Активация/Деактивация кнопок
+        private bool _IsEnableFormButton = true;
+        /// <summary>Активация кнопки Кнопка формирования главной таблицы</summary>
+        public bool IsEnableFormButton
+        {
+            get => _IsEnableFormButton;
+            set => Set(ref _IsEnableFormButton, value);
+        }
+
+
+        private bool _IsEnableFormButtonPerson;
+        /// <summary>Активация кнопки Кнопка формирования таблицы для одного сотрудника</summary>
+        public bool IsEnableFormButtonPerson
+        {
+            get => _IsEnableFormButtonPerson;
+            set => Set(ref _IsEnableFormButtonPerson, value);
+        }
+        #endregion
+
         #region Диалоговое окно
         private IDialogWindow Window;
         #endregion
@@ -486,6 +505,7 @@ namespace ACS.ViewModels
         {
             Task.Run(() =>
             {
+                IsEnableFormButton = false;
                 try
                 {
                     string queryOne = @$"With input as(
@@ -707,7 +727,10 @@ namespace ACS.ViewModels
                 catch (Exception ex)
                 {
                     Window.ShowDialog(ex.Message);
-
+                }
+                finally
+                {
+                    IsEnableFormButton = true;
                 }
             });
         }
@@ -723,9 +746,12 @@ namespace ACS.ViewModels
 
         private void OnFormSelectedPersonCommandExecute(object? obj)
         {
-            try
+            Task.Run(() =>
             {
-                string queryOne = @$"With input as(
+                try
+                {
+                    IsEnableFormButtonPerson = false;
+                    string queryOne = @$"With input as(
                                Select p.HozOrgan, p.TimeVal, 
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal asc) first 
                                From pLogData p 
@@ -735,7 +761,7 @@ namespace ACS.ViewModels
                                SElect i.TimeVal input From input i                              
                                Where i.first = 1 Order by i.TimeVal";
 
-                string queryTwo = @$"With output as(
+                    string queryTwo = @$"With output as(
                                Select p.HozOrgan, p.TimeVal,
                                Row_number() Over(Partition by Convert(date, p.TimeVal), p.HozOrgan Order by p.TimeVal desc) last 
                                From pLogData p 
@@ -745,24 +771,29 @@ namespace ACS.ViewModels
                                Select o.TimeVal output from output o 
                                Where o.last = 1 Order by o.TimeVal";
 
-                var list = LogData.GetLogDataFromDataTable(queryOne, queryTwo);
-                foreach (var item in list)
-                {
-                    if (item.EntryTime is DateTime d1 && d1.TimeOfDay > StartTimePerson.TimeOfDay)
+                    var list = LogData.GetLogDataFromDataTable(queryOne, queryTwo);
+                    foreach (var item in list)
                     {
-                        item.IsLateEntry = true;
+                        if (item.EntryTime is DateTime d1 && d1.TimeOfDay > StartTimePerson.TimeOfDay)
+                        {
+                            item.IsLateEntry = true;
+                        }
+                        if (item.ExitTime is DateTime d2 && d2.TimeOfDay < ExitTimePerson.TimeOfDay)
+                        {
+                            item.IsEarlyExit = true;
+                        }
                     }
-                    if (item.ExitTime is DateTime d2 && d2.TimeOfDay < ExitTimePerson.TimeOfDay)
-                    {
-                        item.IsEarlyExit = true;
-                    }
+                    ListDataPerson = list;
                 }
-                ListDataPerson = list;
-            }
-            catch (Exception ex)
-            {
-                Window.ShowDialog(ex.Message);
-            }
+                catch (Exception ex)
+                {
+                    Window.ShowDialog(ex.Message);
+                }
+                finally
+                {
+                    IsEnableFormButtonPerson = true;
+                }
+            });
         }
         #endregion
         #endregion

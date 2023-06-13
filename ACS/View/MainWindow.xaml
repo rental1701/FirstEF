@@ -47,9 +47,10 @@
                     <StackPanel Orientation="Horizontal">
                         <Button Command="{Binding FormCommand}" Name="ExcellAll"
                             Content="Сформировать" Margin="34,10,10,10" HorizontalAlignment="Center"
-                            Style="{StaticResource UpdateButton}"/>
-                        <Button  Command="{Binding Source={StaticResource excelSave}, Path=SaveCommand}"
-                                CommandParameter="{Binding ListLogData}" Style="{StaticResource ExcelButton}"/>
+                            Style="{StaticResource UpdateButton}" IsEnabled="{Binding IsEnableFormButton}"/>
+                        <Button DataContext="{Binding Source={StaticResource excelSave}}" IsEnabled="{Binding IsEnableButton}"  Command="{Binding SaveCommand}" 
+                                CommandParameter="{Binding  RelativeSource={RelativeSource AncestorType={x:Type Window}},Path=DataContext.ListLogData}" 
+                                Style="{StaticResource ExcelButton}"/>
                     </StackPanel>
                     <GroupBox Header="Рабочий день" Margin="10,5" Padding="5">
                         <StackPanel Orientation="Vertical">
@@ -285,16 +286,16 @@
                                 <Label Content="До:" VerticalAlignment="Center"/>
                                 <tk:DateTimePicker Value="{Binding FinishDatePerson}"  FontSize="14" Height="30"
                                                    FontWeight="DemiBold" VerticalAlignment="Center"/>
-                                <Button x:Name="UpdatePerson" Content="Обновить" Command="{Binding FormSelectedPersonCommand}" 
-                                        Style="{StaticResource UpdateButton}" Margin="10,2">
+                                <Button x:Name="UpdatePerson" Content="Обновить" Command="{Binding FormSelectedPersonCommand}" IsEnabled="{Binding IsEnableFormButtonPerson}"
+                                        Style="{StaticResource UpdatePersonButton}" Margin="10,2">
                                     
                                 </Button>
-                                <Button Command="{Binding Source={StaticResource excelSave},Path=SavePersonDataCommand}" 
+                                <Button Command="{Binding SavePersonDataCommand}" IsEnabled="{Binding IsEnableButtonPerson}" DataContext="{Binding Source={StaticResource excelSave}}"
                                         Name="ExcelPerson" Style="{StaticResource ExcelButton}">
                                     <Button.CommandParameter>
                                         <MultiBinding Converter="{StaticResource PersonConParam}">
-                                            <Binding Path="ListDataPerson"/>
-                                            <Binding Path="SelectedPerson"/>
+                                            <Binding Path="DataContext.ListDataPerson" RelativeSource="{RelativeSource AncestorType={x:Type Window}}"/>
+                                            <Binding Path="DataContext.SelectedPerson" RelativeSource="{RelativeSource AncestorType={x:Type Window}}"/>
                                         </MultiBinding>
                                     </Button.CommandParameter>
                                 </Button>
@@ -319,7 +320,7 @@
                             </Grid.RowDefinitions>
                             <DataGrid Grid.Row="0" ItemsSource="{Binding ListDataPerson}" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
                                 <DataGrid.Columns>
-                                    <DataGridTemplateColumn Header="Вход">
+                                    <DataGridTemplateColumn Header="Вход" CanUserSort="True" SortMemberPath="EntryTime">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding EntryTime, StringFormat=' dd-MM-yyyy  HH:mm  (ddd)', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture }}">
@@ -339,7 +340,7 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="Выход">
+                                    <DataGridTemplateColumn Header="Выход" CanUserSort="True" SortMemberPath="ExitTime">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding ExitTime, StringFormat=' dd-MM-yyyy  HH:mm  (ddd)', ConverterCulture={x:Static glob:CultureInfo.CurrentCulture }}">

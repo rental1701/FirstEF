@@ -83,26 +83,50 @@ namespace ACS.Model
                                     log.IsEarlyExit = true;
                                 }
                                 log.LastOutput = d;
-
+                                data.Rows[row].Delete();
+                                data.AcceptChanges();
                                 break;
                             }
-                            int c = Convert.ToInt32(d.Day - log.FirstInput?.Day);
-                            int[] number = { 1, -30, -29, -28 };
+                            int c = Convert.ToInt32(d.DayOfYear - log.FirstInput?.DayOfYear);
+                            int number =  1 ;
 
-                            if (Array.Exists(number, x => x == c))
+                            if (number == c)
                             {
                                 if (d.TimeOfDay < timeExit)
                                 {
                                     log.IsEarlyExit = true;
                                 }
                                 log.LastOutput = d;
+                                data.Rows[row].Delete();
+                                data.AcceptChanges();
                                 break;
                             }
-
                         }
                         row++;
                     }
-                } 
+                }
+                if (data.Rows.Count != 0)
+                {
+                    for (int i = 0; i < data.Rows.Count; i++)
+                    {
+                        int id = TryParseIntBD( data.Rows[i].ItemArray[0]);
+                        DateTime? d = ConvertToDateTime(data.Rows[i].ItemArray[1]);
+                        LogDataIO log = logDatas.First(l=>l.HozOrgan == id);
+                        if (log != null)
+                        {
+                            logDatas.Add(new LogDataIO
+                            {
+                                HozOrgan = log.HozOrgan,
+                                SurName = log.SurName,
+                                Division = log.Division,
+                                LastOutput = d,
+                                IsEarlyExit = d?.TimeOfDay < timeExit 
+                            });
+                        }
+                    }
+                    LogDataCompare comp = new();
+                    logDatas.Sort(comp);
+                }
             }
             else
             {
@@ -117,17 +141,12 @@ namespace ACS.Model
                             log.LastOutput = date;
                             if (date?.TimeOfDay < timeExit)
                                 log.IsEarlyExit= true;
-
                         }                       
                     }
                 }
                
             }
         }
-
-
-      
-
         public override bool Equals(object? obj)
         {
             if (obj is LogDataIO log)
@@ -141,7 +160,10 @@ namespace ACS.Model
         {
             return base.GetHashCode();
         }
-
+        public LogDataIO()
+        {
+            
+        }
         public LogDataIO(DataTable data, int row, TimeSpan time)
         {
             int c = 0;
@@ -170,6 +192,36 @@ namespace ACS.Model
                         break;
                 }
                 c++;
+            }
+        }
+    }
+
+    public class LogDataCompare : IComparer<LogDataIO>
+    {
+        public int Compare(LogDataIO? x, LogDataIO? y)
+        {
+            if (x?.FirstInput == null)
+            {
+                if (y?.FirstInput == null)
+                {
+                    return 0;
+                }
+                else
+                    return 0;
+            }
+            else
+            {
+                if (y?.FirstInput == null)
+                {
+                    return 1;
+                }
+                else
+                {
+                  int? c =  x.FirstInput?.CompareTo(y.FirstInput) ;
+                    if (c != null)
+                        return (int)c;
+                    return 0;
+                }
             }
         }
     }
